@@ -3,7 +3,12 @@ import os
 import sys
 import pygame
 from random import randint
-from shape import Shape
+
+from shape_s import Shape_s
+from shape_bar import Shape_bar
+from shape_square import Shape_square
+from shape_u import Shape_u
+
 from threading import Thread
 from collections import deque
 from pygame import Rect
@@ -35,44 +40,51 @@ class Game:
 		self.game_over = False
 		self.victory = False
 
-		self.font = pygame.font.SysFont(None,100)
-		self.label_game_over = self.font.render("Game Over",1,(255,255,255))
-		self.label_victory = self.font.render("Victory is yours",1,(255,255,255))
-
 		#Clock
 		self.clock = pygame.time.Clock()
-
-		# Init Variables
 
 		self.shapes = []
 		self.tidy_shapes = []
 		
 		# Init Shapes
+		self.shape_types = ['bar','s','u']
+		self.shape_colors = [(255,255,255),(51,153,255),(153,255,51),(153,51,255)]
 
-		mini_square = [Rect(0,0,50,50)]
-		bar = [Rect(0,0,50,150)]
-		z = [Rect(50,0,50,100),Rect(0,50,50,100)]
+		for i in range(1,10):
+			shape_type_chosen = randint(1,len(self.shape_types) - 1)
 
-		for i in range(1,7):
-			u = [Rect(0,0,50,100),Rect(50,0,50,50),Rect(100,0,50,100)]
-			sha = Shape(i)
-			sha.init_shape_list(u)
-			self.shapes.append(sha)
+			if shape_type_chosen == 1:
+				shape = Shape_bar(i)
+			elif shape_type_chosen == 2:
+				shape = Shape_s(i)
+			elif shape_type_chosen == 3:
+				shape = Shape_square(i)
+			else:				
+				shape = Shape_u(i)
 
-		self.queue = deque(self.shapes)
+			self.shapes.append(shape)
+
 		# Time Variables
 		self.timecount_m = 0
-		# self.shape_move_time = 2000
 		self.timecount = 0
+
+
+		self.queue = deque(self.shapes)
 
 		self.left_pressed = False
 		self.right_pressed = False
+		self.top_pressed = False
+
 		self.border_left = False
 		self.border_right = False
 
+		self.top_pressed_count = 0
 		self.start_new_object = False
 		self.collision = False
 		self.shape = self.queue.popleft()
+
+		print("Init position :")
+		print(self.shape.shape_list)
 
 	def run(self):
 		mainloop = True
@@ -90,15 +102,25 @@ class Game:
 						self.left_pressed = True
 					if event.key == pygame.K_RIGHT:
 						self.right_pressed = True
-
+					if event.key == pygame.K_UP:
+						self.top_pressed = True
 			if self.start_new_object:
 				if len(self.queue):
 					self.shape = self.queue.popleft()
+					self.top_pressed_count = 0
 				else:
 					self.shape = None
 				self.start_new_object = False
 
 			if self.shape is not None:
+
+				if self.top_pressed:
+
+					self.top_pressed_count += 1
+					self.top_pressed_count = self.shape.move(self.top_pressed_count)
+
+					self.top_pressed = False
+					
 
 				if len(self.tidy_shapes) > 0:
 
@@ -107,8 +129,8 @@ class Game:
 						for tidy_rect in tidy_shape.shape_list:
 
 							for rect in self.shape.shape_list:
-
-								if (rect.y == tidy_rect.y - 105) and ( rect.x == tidy_rect.x):
+								# (tidy_rect.x > rect.x or tidy_rect.x < rect.x + rect.width)
+								if (rect.y == tidy_rect.y - (rect.height + 5)) and ( rect.x == tidy_rect.x ):
 									self.tidy_shapes.append(self.shape)
 
 									self.start_new_object = True
@@ -120,7 +142,7 @@ class Game:
 						self.border_left = True
 						self.border_right = False
 
-					elif rect.x + 50 == self.scr_width:
+					elif rect.x + rect.width == self.scr_width:
 						self.border_right = True
 						self.border_left = False
 
@@ -134,12 +156,13 @@ class Game:
 							self.border_left = False
 
 				for i,rect_sh in enumerate(self.shape.shape_list):
-					if ((rect_sh.y + 100) <= self.scr_height):
+					if ((rect_sh.y + rect_sh.height) <= self.scr_height):
 						rect_sh.y += 5
 
-					pygame.draw.rect(self.screen,(255,255,255),rect_sh)
+					shape_color_chosen = randint(1,len(self.shape_colors) - 1)
+					pygame.draw.rect(self.screen,self.shape_colors[shape_color_chosen],rect_sh)
 
-					if( rect_sh.y +100) == self.scr_height:
+					if( rect_sh.y + rect_sh.height) == self.scr_height:
 						self.start_new_object = True
 
 
