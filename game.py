@@ -3,6 +3,8 @@ import os
 import sys
 import pygame
 from random import randint
+from operator import itemgetter
+from itertools import groupby
 
 from shape_s import Shape_s
 from shape_bar import Shape_bar
@@ -47,11 +49,12 @@ class Game:
 		self.tidy_shapes = []
 		
 		# Init Shapes
-		self.shape_types = ['bar','s','u']
+		self.shape_types = ['bar','square','u','s']
 		self.shape_colors = [(255,255,255),(51,153,255),(153,255,51),(153,51,255)]
 
-		for i in range(1,10):
+		for i in range(1,15):
 			shape_type_chosen = randint(1,len(self.shape_types) - 1)
+			# shape_type_chosen = 1
 
 			if shape_type_chosen == 1:
 				shape = Shape_bar(i)
@@ -120,7 +123,6 @@ class Game:
 					self.top_pressed_count = self.shape.move(self.top_pressed_count)
 
 					self.top_pressed = False
-					
 
 				if len(self.tidy_shapes) > 0:
 
@@ -129,10 +131,8 @@ class Game:
 						for tidy_rect in tidy_shape.shape_list:
 
 							for rect in self.shape.shape_list:
-								# (tidy_rect.x > rect.x or tidy_rect.x < rect.x + rect.width)
 								if (rect.y == tidy_rect.y - (rect.height + 5)) and ( rect.x == tidy_rect.x ):
 									self.tidy_shapes.append(self.shape)
-
 									self.start_new_object = True
 									self.collision = True
 
@@ -174,7 +174,36 @@ class Game:
 				for sh in self.tidy_shapes:
 					for rect in sh.shape_list:
 						pygame.draw.rect(self.screen,(255,255,255),rect)
-				
+
+				# Check if line can be destroyed
+
+				if self.start_new_object:
+
+					abc = 450
+					size_shapes_on_line = 0
+
+					shape_to_remove = []
+					for sh in self.tidy_shapes:
+
+						for z,rect in enumerate(sh.shape_list):
+							
+							if abc == rect.y:
+								size_shapes_on_line += rect.width
+								print("shapes size :",size_shapes_on_line)
+								shape_to_remove.append({'shape':sh.num,'shape_ind':z})
+					if size_shapes_on_line == self.scr_width:
+						print(self.tidy_shapes)
+
+						shape_to_remove.sort(key=itemgetter('shape'))
+
+						print(self.tidy_shapes)
+						for shape, items in groupby(shape_to_remove, key=itemgetter('shape')):
+							indice = shape - 1
+							for i in items:
+								del self.tidy_shapes[indice].shape_list[0]
+
+						print(self.tidy_shapes)
+					size_shapes_on_line = 0
 
 				self.collision = False
 				self.left_pressed = False

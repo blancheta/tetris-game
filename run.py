@@ -7,7 +7,7 @@ from gamemenu import GameMenu
 
 pygame.init()
 
-screen = pygame.display.set_mode((300,480),0,32)
+screen = pygame.display.set_mode((300,500),0,32)
 
 # Game Menu
 pygame.display.set_caption('Game Menu')
