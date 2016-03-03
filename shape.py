@@ -4,9 +4,10 @@ from pygame import Rect
 
 class Shape:
 
-	def __init__(self,num):
+	def __init__(self,num,color):
 
 		self.num = num
+		self.color = color
 		self.shape_list = []
 
 

@@ -51,27 +51,12 @@ class Game:
 		# Init Shapes
 		self.shape_colors = [(255,255,255),(51,153,255),(153,255,51),(153,51,255)]
 
-		for i in range(0,10):
-			# shape_type_chosen = randint(1,2)
-			shape_type_chosen = 1
-
-			if shape_type_chosen == 1:
-				shape = Shape_bar(i)
-			elif shape_type_chosen == 2:
-				shape = Shape_square(i)
-			elif shape_type_chosen == 3:
-				shape = Shape_u(i)
-			else:				
-				shape = Shape_u(i)
-
-			self.shapes.append(shape)
-
 		# Time Variables
 		self.timecount_m = 0
 		self.timecount = 0
 
-
-		self.queue = deque(self.shapes)
+		# Init Variables
+		self.super_indice = 0
 
 		self.left_pressed = False
 		self.right_pressed = False
@@ -81,9 +66,9 @@ class Game:
 		self.border_right = False
 
 		self.top_pressed_count = 0
-		self.start_new_object = False
+		self.start_new_object = True
 		self.collision = False
-		self.shape = self.queue.popleft()
+		self.shape = None
 
 	def run(self):
 		mainloop = True
@@ -104,13 +89,13 @@ class Game:
 					if event.key == pygame.K_UP:
 						self.top_pressed = True
 			if self.start_new_object:
-				if len(self.queue):
-					self.shape = self.queue.popleft()
-					self.top_pressed_count = 0
-				else:
-					self.shape = None
-				self.start_new_object = False
 
+				shape_color_chosen = randint(1,len(self.shape_colors) - 1)
+				self.shape = Shape_bar(self.super_indice,self.shape_colors[shape_color_chosen])
+				self.super_indice += 1
+				self.start_new_object = False
+				self.top_pressed_count = 0
+				
 			if self.shape is not None:
 
 				if self.top_pressed:
@@ -128,9 +113,10 @@ class Game:
 
 							for rect in self.shape.shape_list:
 								if (rect.y == tidy_rect.y - (rect.height + 5)) and ( rect.x == tidy_rect.x ):
-									self.tidy_shapes.append(self.shape)
-									self.start_new_object = True
-									self.collision = True
+									if self.shape not in self.tidy_shapes:
+										self.tidy_shapes.append(self.shape)
+										self.start_new_object = True
+										self.collision = True
 
 				for rect in self.shape.shape_list:
 
@@ -155,21 +141,23 @@ class Game:
 					if ((rect_sh.y + rect_sh.height) <= self.scr_height):
 						rect_sh.y += 5
 
-					shape_color_chosen = randint(1,len(self.shape_colors) - 1)
-					pygame.draw.rect(self.screen,self.shape_colors[shape_color_chosen],rect_sh)
+					
+					pygame.draw.rect(self.screen,self.shape.color,rect_sh)
 
 					if( rect_sh.y + rect_sh.height) == self.scr_height:
 						self.start_new_object = True
 
 				if self.start_new_object:
-					self.tidy_shapes.append(self.shape)
+					if self.shape not in self.tidy_shapes:
+						self.tidy_shapes.append(self.shape)
 
 				# Draw all shapes saved
 
 				if len(self.tidy_shapes) > 0:
+
 					for sh in self.tidy_shapes:
 						for rect in sh.shape_list:
-							pygame.draw.rect(self.screen,(255,255,255),rect)
+							pygame.draw.rect(self.screen,sh.color,rect)
 
 					# Check if line can be destroyed
 
@@ -179,19 +167,27 @@ class Game:
 						size_shapes_on_line = 0
 
 						shape_to_remove = []
+						shape_remove = []
 						case_on_line = 0
 						for sh in self.tidy_shapes:
 							for z,rect in enumerate(sh.shape_list):
 								
 								if abc == rect.y:
 									case_on_line +=1
-									print(sh.num)
-									shape_to_remove.append({'shape':sh.num,'shape_ind':z})
+
+									for sha in shape_to_remove:
+										if sh.num == sha['shape']:
+											break
+										else:
+											shape_to_remove.append({'shape':sh.num,'shape_ind':z})
 
 						print(case_on_line)
 						if case_on_line == 6:
 
-							shape_remove = []
+
+							print("Initialisation ...")
+							print(self.tidy_shapes)
+							print("*"*60)
 
 							shape_to_remove.sort(key=itemgetter('shape'))
 
@@ -203,29 +199,35 @@ class Game:
 										if i['shape_ind'] == n:
 											del self.tidy_shapes[shape].shape_list[n]
 
+								print("shape_list : ",self.tidy_shapes[shape].shape_list)
 								if len(self.tidy_shapes[shape].shape_list) == 0:
-									print("shape_list de Shape ",shape," est vide donc dans shape_remove ")
+									print("Add shape to shape_remove")
+									# print("shape_list de Shape ",shape," est vide donc dans shape_remove ")
 									shape_remove.append(shape)
 
-							case_on_line = 0
-							shape_to_remove.clear()
-
 							for e in reversed(shape_remove):
-								print("Suppression de ",self.tidy_shapes[e], " avec un num:",self.tidy_shapes[e].num)
-								del self.tidy_shapes[e]
+								self.tidy_shapes.remove(self.tidy_shapes[e])
 
+							shape_to_remove.clear()
+							shape_remove.clear()
+
+							case_on_line = 0
 							# On décale toutes les formes présentes dans tidy_shapes de 50 vers le bas
-							print("On décales les formes restantes vers le bas")
 							for enum,left_shape in enumerate(self.tidy_shapes):
-								print("left shape num :",left_shape.num," devient ")
 								left_shape.num = enum
 								print(left_shape.num)
 								for left_sh in left_shape.shape_list:
 									left_sh.y += 50
 
+							if len(self.tidy_shapes) == 0:
+								self.super_indice = 0
+								print("													")
+							else:
+								self.super_indice = len(self.tidy_shapes) - 1
 
-							shape_remove.clear()
-							print("shape_to_remove est nettoyé ...")
+							print("Fin ...")
+							print(self.tidy_shapes)
+
 
 				self.collision = False
 				self.left_pressed = False
