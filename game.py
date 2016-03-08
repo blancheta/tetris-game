@@ -69,8 +69,130 @@ class Game:
 		self.collision = False
 		self.shape = None
 
-		self.memo_left = 0
 		self.created_id = 0
+
+	def create_new_shape(self):
+
+		shape_color_chosen = randint(1,len(self.shape_colors) - 1)
+		shape_chosen = randint(0,3)
+
+		self.super_indice = len(self.tidy_shapes)
+
+		creation_shape_params = [self.super_indice,"Bar"+str(self.created_id),self.shape_colors[shape_color_chosen]]
+		if shape_chosen == 0:
+			self.shape = Shape_u(*creation_shape_params)
+		elif shape_chosen == 1:
+			self.shape = Shape_s(*creation_shape_params)
+		elif shape_chosen == 2:
+			self.shape = Shape_square(*creation_shape_params)
+		elif shape_chosen == 3:
+			self.shape = Shape_bar(*creation_shape_params)
+
+		self.created_id += 1
+		self.start_new_object = False
+		self.top_pressed_count = 0
+
+	def detect_keyboard_event(self,events):
+
+		for event in events:
+			if event.type == pygame.QUIT:
+				sys.exit()
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_LEFT:
+					self.left_pressed = True
+				if event.key == pygame.K_RIGHT:
+					self.right_pressed = True
+				if event.key == pygame.K_UP:
+					self.top_pressed = True
+	
+	def detect_collision_with_other_shapes(self):
+
+		for tidy_shape in self.tidy_shapes:
+
+			for tidy_rect in tidy_shape.shape_list:
+
+				for rect in self.shape.shape_list:
+					if (rect.y == tidy_rect.y - (rect.height + 5)) and ( rect.x == tidy_rect.x ):
+						
+						if self.shape not in self.tidy_shapes:
+							self.tidy_shapes.append(self.shape)
+							self.start_new_object = True
+							self.collision = True
+
+	def draw_current_shape(self):
+
+		for i,rect_sh in enumerate(self.shape.shape_list):
+			if ((rect_sh.y + rect_sh.height) <= self.scr_height):
+				rect_sh.y += 5
+			
+			pygame.draw.rect(self.screen,self.shape.color,rect_sh)
+
+			if( rect_sh.y + rect_sh.height ) == self.scr_height:
+				self.start_new_object = True
+		if self.start_new_object:
+			if self.shape not in self.tidy_shapes:
+				self.tidy_shapes.append(self.shape)
+
+	def draw_tidy_shapes(self):
+		for sh in self.tidy_shapes:
+			for rect in sh.shape_list:
+				pygame.draw.rect(self.screen,sh.color,rect)
+
+	def delete_empty_shapes(self,shape_remove_list):
+		for e in reversed(shape_remove_list):
+			self.tidy_shapes.remove(self.tidy_shapes[e])
+
+	def delete_rects_on_break_line(self):
+
+		self.shape_to_remove.sort(key=itemgetter('shape'))
+
+		for shape, items in groupby(self.shape_to_remove, key=itemgetter('shape')):
+
+			for i in items:
+
+				for n,sha in reversed(list(enumerate(self.tidy_shapes[shape].shape_list))):
+					if i['shape_ind'] == n:
+						del self.tidy_shapes[shape].shape_list[n]
+
+			if len(self.tidy_shapes[shape].shape_list) == 0:
+				self.shape_remove.append(shape)
+
+	def forbid_to_go_over_screen_border(self,rect):
+		# Forbid to go over the left border
+
+		if rect.x == 0:
+			self.border_left = True
+			self.border_right = False
+
+		# Forbid to go over the right border
+
+		elif rect.x + rect.width == self.scr_width:
+			self.border_right = True
+			self.border_left = False
+
+	def move_down_left_shapes(self,tidy_shapes,abc):
+		for enum,left_shape in enumerate(tidy_shapes):
+			left_shape.num = enum
+			for left_sh in left_shape.shape_list:
+				if left_sh.y < abc:
+					left_sh.y += 50
+
+	def move_shape_on_the_left(self,rect):
+		rect.x -= 50
+		self.border_right = False
+
+	def move_shape_on_the_right(self,rect):
+		rect.x += 50
+		self.border_left = False
+
+	def reset_values_end_loop(self):
+		self.shape_to_remove.clear()
+		self.shape_remove.clear()
+
+		self.collision = False
+		self.left_pressed = False
+		self.right_pressed = False
+
 	def run(self):
 		mainloop = True
 		while mainloop:
@@ -79,41 +201,13 @@ class Game:
 			self.screen.fill([0, 0, 0])
 			self.screen.blit(self.bg,self.bg_rect)
 
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					sys.exit()
-				if event.type == pygame.KEYDOWN:
-					if event.key == pygame.K_LEFT:
-						self.left_pressed = True
-					if event.key == pygame.K_RIGHT:
-						self.right_pressed = True
-					if event.key == pygame.K_UP:
-						self.top_pressed = True
+			self.detect_keyboard_event(pygame.event.get())
+
 			if self.start_new_object:
 
-				shape_color_chosen = randint(1,len(self.shape_colors) - 1)
-				shape_chosen = randint(0,4)
-
-				self.super_indice = len(self.tidy_shapes)
-
-				creation_shape_params = [self.super_indice,"Bar"+str(self.created_id),self.shape_colors[shape_color_chosen]]
-				if shape_chosen == 0:
-					self.shape = Shape_u(*creation_shape_params)
-				elif shape_chosen == 1:
-					self.shape = Shape_s(*creation_shape_params)
-				elif shape_chosen == 2:
-					self.shape = Shape_square(*creation_shape_params)
-				elif shape_chosen == 3:
-					self.shape = Shape_bar(*creation_shape_params)
-
-				self.created_id += 1
-				self.start_new_object = False
-				self.top_pressed_count = 0
+				self.create_new_shape()
 				
 			if self.shape is not None:
-
-				if self.memo_left != len(self.tidy_shapes):
-					self.memo_left = len(self.tidy_shapes)
 
 				if self.top_pressed:
 
@@ -124,67 +218,27 @@ class Game:
 
 				if len(self.tidy_shapes) > 0:
 
-					for tidy_shape in self.tidy_shapes:
-
-						for tidy_rect in tidy_shape.shape_list:
-
-							for rect in self.shape.shape_list:
-								if (rect.y == tidy_rect.y - (rect.height + 5)) and ( rect.x == tidy_rect.x ):
-									
-									if self.shape not in self.tidy_shapes:
-										self.tidy_shapes.append(self.shape)
-										self.start_new_object = True
-										self.collision = True
+					self.detect_collision_with_other_shapes()
 
 				for rect in self.shape.shape_list:
 
-					# Forbid to go over the left border
-
-					if rect.x == 0:
-						self.border_left = True
-						self.border_right = False
-
-					# Forbid to go over the right border
-
-					elif rect.x + rect.width == self.scr_width:
-						self.border_right = True
-						self.border_left = False
+					self.forbid_to_go_over_screen_border(rect)
 
 					if rect.x >= 0 and rect.x < self.scr_width:
 
-						# Move on the left
-
 						if self.left_pressed and not self.border_left:
-							rect.x -= 50
-							self.border_right = False		
-
-						# Move on the right
+		
+							self.move_shape_on_the_left(rect)
 
 						if self.right_pressed and not self.border_right:
-							rect.x += 50
-							self.border_left = False
 
-				# Draw current shape + check if shape
+							self.move_shape_on_the_right(rect)
 
-				for i,rect_sh in enumerate(self.shape.shape_list):
-					if ((rect_sh.y + rect_sh.height) <= self.scr_height):
-						rect_sh.y += 5
-					
-					pygame.draw.rect(self.screen,self.shape.color,rect_sh)
-
-					if( rect_sh.y + rect_sh.height ) == self.scr_height:
-						self.start_new_object = True
-				if self.start_new_object:
-					if self.shape not in self.tidy_shapes:
-						self.tidy_shapes.append(self.shape)
-
-				# Draw all shapes saved
+				self.draw_current_shape()
 
 				if len(self.tidy_shapes) > 0:
 
-					for sh in self.tidy_shapes:
-						for rect in sh.shape_list:
-							pygame.draw.rect(self.screen,sh.color,rect)
+					self.draw_tidy_shapes()					
 
 					# Check if line can be destroyed
 
@@ -200,39 +254,13 @@ class Game:
 									self.shape_to_remove.append({'shape':sh.num,'shape_ind':z})
 
 						if case_on_line == 6:
-							self.shape_to_remove.sort(key=itemgetter('shape'))
-
-							for shape, items in groupby(self.shape_to_remove, key=itemgetter('shape')):
-
-								for i in items:
-
-									for n,sha in reversed(list(enumerate(self.tidy_shapes[shape].shape_list))):
-										if i['shape_ind'] == n:
-											del self.tidy_shapes[shape].shape_list[n]
-
-								if len(self.tidy_shapes[shape].shape_list) == 0:
-									self.shape_remove.append(shape)
-
-							for e in reversed(self.shape_remove):
-								self.tidy_shapes.remove(self.tidy_shapes[e])
-					
-							# Move down left shapes of 50 px
-
-							for enum,left_shape in enumerate(self.tidy_shapes):
-								left_shape.num = enum
-								for left_sh in left_shape.shape_list:
-									if left_sh.y < abc:
-										left_sh.y += 50
-
-							# Reset case_on_line
 							
+							self.delete_rects_on_break_line()
+							self.delete_empty_shapes(self.shape_remove)
+							self.move_down_left_shapes(self.tidy_shapes,abc)						
+
+							# Reset case_on_line					
 							case_on_line = 0
 
-				self.shape_to_remove.clear()
-				self.shape_remove.clear()
-
-				self.collision = False
-				self.left_pressed = False
-				self.right_pressed = False
+				self.reset_values_end_loop()
 				pygame.display.flip()
-
