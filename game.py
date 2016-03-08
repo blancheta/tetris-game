@@ -101,7 +101,6 @@ class Game:
 			if self.shape is not None:
 
 				if self.memo_left != len(self.tidy_shapes):
-					# print("Nb de Shapes restantes :",len(self.tidy_shapes))
 					self.memo_left = len(self.tidy_shapes)
 
 				if self.top_pressed:
@@ -127,22 +126,33 @@ class Game:
 
 				for rect in self.shape.shape_list:
 
+					# Forbid to go over the left border
+
 					if rect.x == 0:
 						self.border_left = True
 						self.border_right = False
+
+					# Forbid to go over the right border
 
 					elif rect.x + rect.width == self.scr_width:
 						self.border_right = True
 						self.border_left = False
 
 					if rect.x >= 0 and rect.x < self.scr_width:
+
+						# Move on the left
+
 						if self.left_pressed and not self.border_left:
 							rect.x -= 50
 							self.border_right = False		
 
+						# Move on the right
+
 						if self.right_pressed and not self.border_right:
 							rect.x += 50
 							self.border_left = False
+
+				# Draw current shape + check if shape
 
 				for i,rect_sh in enumerate(self.shape.shape_list):
 					if ((rect_sh.y + rect_sh.height) <= self.scr_height):
@@ -152,7 +162,6 @@ class Game:
 
 					if( rect_sh.y + rect_sh.height ) == self.scr_height:
 						self.start_new_object = True
-						# print("self.shape =",self.shape.num," shape_list elem:",i)
 				if self.start_new_object:
 					if self.shape not in self.tidy_shapes:
 						self.tidy_shapes.append(self.shape)
@@ -190,14 +199,12 @@ class Game:
 											del self.tidy_shapes[shape].shape_list[n]
 
 								if len(self.tidy_shapes[shape].shape_list) == 0:
-									# print("shape_list de Shape ",shape," est vide donc dans shape_remove ")
 									self.shape_remove.append(shape)
 
 							for e in reversed(self.shape_remove):
 								self.tidy_shapes.remove(self.tidy_shapes[e])
-
-							case_on_line = 0
-							# On décale toutes les formes présentes dans tidy_shapes de 50 vers le bas
+					
+							# Move down left shapes of 50 px
 
 							for enum,left_shape in enumerate(self.tidy_shapes):
 								print(left_shape.name," num :",left_shape.num)
@@ -205,6 +212,10 @@ class Game:
 								for left_sh in left_shape.shape_list:
 									if left_sh.y < abc:
 										left_sh.y += 50
+
+							# Reset case_on_line
+							
+							case_on_line = 0
 
 				self.shape_to_remove.clear()
 				self.shape_remove.clear()
