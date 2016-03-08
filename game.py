@@ -92,8 +92,20 @@ class Game:
 			if self.start_new_object:
 
 				shape_color_chosen = randint(1,len(self.shape_colors) - 1)
+				shape_chosen = randint(0,4)
+
 				self.super_indice = len(self.tidy_shapes)
-				self.shape = Shape_bar(self.super_indice,"Bar"+str(self.created_id),self.shape_colors[shape_color_chosen])
+
+				creation_shape_params = [self.super_indice,"Bar"+str(self.created_id),self.shape_colors[shape_color_chosen]]
+				if shape_chosen == 0:
+					self.shape = Shape_u(*creation_shape_params)
+				elif shape_chosen == 1:
+					self.shape = Shape_s(*creation_shape_params)
+				elif shape_chosen == 2:
+					self.shape = Shape_square(*creation_shape_params)
+				elif shape_chosen == 3:
+					self.shape = Shape_bar(*creation_shape_params)
+
 				self.created_id += 1
 				self.start_new_object = False
 				self.top_pressed_count = 0
@@ -207,7 +219,6 @@ class Game:
 							# Move down left shapes of 50 px
 
 							for enum,left_shape in enumerate(self.tidy_shapes):
-								print(left_shape.name," num :",left_shape.num)
 								left_shape.num = enum
 								for left_sh in left_shape.shape_list:
 									if left_sh.y < abc:
