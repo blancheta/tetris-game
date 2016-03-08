@@ -5,8 +5,8 @@ from shape import Shape
 
 class Shape_s(Shape):
 
-	def __init__(self,num):
-		super(Shape_s,self).__init__(num)
+	def __init__(self,num,name,color):
+		super(Shape_s,self).__init__(num,name,color)
 		self.shape_list = [Rect(50,0,50,50),Rect(100,0,50,50),Rect(0,50,50,50),Rect(50,50,50,50)]
 	def rota180(self):
 

@@ -70,6 +70,7 @@ class Game:
 		self.shape = None
 
 		self.memo_left = 0
+		self.created_id = 0
 	def run(self):
 		mainloop = True
 		while mainloop:
@@ -91,8 +92,9 @@ class Game:
 			if self.start_new_object:
 
 				shape_color_chosen = randint(1,len(self.shape_colors) - 1)
-				self.shape = Shape_bar(self.super_indice,self.shape_colors[shape_color_chosen])
-				self.super_indice += 1
+				self.super_indice = len(self.tidy_shapes)
+				self.shape = Shape_bar(self.super_indice,"Bar"+str(self.created_id),self.shape_colors[shape_color_chosen])
+				self.created_id += 1
 				self.start_new_object = False
 				self.top_pressed_count = 0
 				
@@ -176,9 +178,6 @@ class Game:
 									case_on_line +=1
 									self.shape_to_remove.append({'shape':sh.num,'shape_ind':z})
 
-						print("="*60)
-						print(self.tidy_shapes)
-
 						if case_on_line == 6:
 							self.shape_to_remove.sort(key=itemgetter('shape'))
 
@@ -191,7 +190,6 @@ class Game:
 											del self.tidy_shapes[shape].shape_list[n]
 
 								if len(self.tidy_shapes[shape].shape_list) == 0:
-									print("Add shape ",shape," to shape_remove")
 									# print("shape_list de Shape ",shape," est vide donc dans shape_remove ")
 									self.shape_remove.append(shape)
 
@@ -200,24 +198,13 @@ class Game:
 
 							case_on_line = 0
 							# On décale toutes les formes présentes dans tidy_shapes de 50 vers le bas
-							print(self.tidy_shapes)
 
 							for enum,left_shape in enumerate(self.tidy_shapes):
+								print(left_shape.name," num :",left_shape.num)
 								left_shape.num = enum
 								for left_sh in left_shape.shape_list:
 									if left_sh.y < abc:
 										left_sh.y += 50
-
-								# print("Dans shape ",left_shape.num," il reste ",left_shape.shape_list)
-							
-							print("Nombre de shapes restantes :", len(self.tidy_shapes))
-
-							if len(self.tidy_shapes) == 0:
-								self.super_indice = 0
-							else:
-								self.super_indice = len(self.tidy_shapes) - 1
-
-							print("Fin ...")
 
 				self.shape_to_remove.clear()
 				self.shape_remove.clear()

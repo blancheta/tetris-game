@@ -5,8 +5,8 @@ from shape import Shape
 
 class Shape_u(Shape):
 
-	def __init__(self,num):
-		super(Shape_u,self).__init__(num)
+	def __init__(self,num,name,color):
+		super(Shape_u,self).__init__(num,name,color)
 		self.shape_list = [Rect(0,0,50,50),Rect(100,0,50,50),Rect(0,50,50,50),Rect(50,50,50,50),Rect(100,50,50,50)]
 	
 	def move(self,up_push_count):
