@@ -119,6 +119,11 @@ class Game:
 							self.start_new_object = True
 							self.collision = True
 
+					if (rect.y == tidy_rect.y - 5):
+						if rect.x == tidy_rect.x + tidy_rect.width:
+							self.left_pressed = False
+						elif rect.x + rect.width == tidy_rect.x:
+							self.right_pressed = False
 	def draw_current_shape(self):
 
 		for i,rect_sh in enumerate(self.shape.shape_list):
