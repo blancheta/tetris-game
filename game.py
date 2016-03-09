@@ -124,6 +124,7 @@ class Game:
 							self.left_pressed = False
 						elif rect.x + rect.width == tidy_rect.x:
 							self.right_pressed = False
+
 	def draw_current_shape(self):
 
 		for i,rect_sh in enumerate(self.shape.shape_list):
