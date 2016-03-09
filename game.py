@@ -119,7 +119,7 @@ class Game:
 							self.start_new_object = True
 							self.collision = True
 
-					if (rect.y >= tidy_rect.y - 5) and (rect.y <= tidy_rect.y-5 + tidy_rect.y + tidy_rect.width):
+					if ((rect.y >= tidy_rect.y - 5) and (rect.y <= tidy_rect.y-5 + tidy_rect.y + tidy_rect.height)) or ((rect.y + rect.height >= tidy_rect.y) and (rect.y + rect.height <= tidy_rect.y + tidy_rect.height)):
 						if rect.x == tidy_rect.x + tidy_rect.width:
 							self.left_pressed = False
 						elif rect.x + rect.width == tidy_rect.x:
