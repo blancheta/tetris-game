@@ -69,12 +69,15 @@ class Game:
 		self.collision = False
 		self.shape = None
 
+		self.ylines = [{'y':450,'cc':0},{'y':400,'cc':0},{'y':350,'cc':0},{'y':300,'cc':0},{'y':250,'cc':0},{'y':200,'cc':0},{'y':150,'cc':0},{'y':100,'cc':0},{'y':50,'cc':0}]
+
 		self.created_id = 0
 
 	def create_new_shape(self):
 
 		shape_color_chosen = randint(1,len(self.shape_colors) - 1)
-		shape_chosen = randint(0,3)
+		# shape_chosen = randint(0,3)
+		shape_chosen = 3
 
 		self.super_indice = len(self.tidy_shapes)
 
@@ -148,7 +151,7 @@ class Game:
 		for e in reversed(shape_remove_list):
 			self.tidy_shapes.remove(self.tidy_shapes[e])
 
-	def delete_rects_on_break_line(self):
+	def delete_rects_on_break_line(self,abc):
 
 		self.shape_to_remove.sort(key=itemgetter('shape'))
 
@@ -157,7 +160,7 @@ class Game:
 			for i in items:
 
 				for n,sha in reversed(list(enumerate(self.tidy_shapes[shape].shape_list))):
-					if i['shape_ind'] == n:
+					if i['y'] == abc and i['shape_ind'] == n:
 						del self.tidy_shapes[shape].shape_list[n]
 
 			if len(self.tidy_shapes[shape].shape_list) == 0:
@@ -250,23 +253,25 @@ class Game:
 
 					if self.start_new_object:
 
-						abc = 450
+						for yline in self.ylines:
+							abc = yline['y']
 
-						case_on_line = 0
-						for sh in reversed(self.tidy_shapes):
-							for z,rect in reversed(list(enumerate(sh.shape_list))):			
-								if abc == rect.y:
-									case_on_line +=1
-									self.shape_to_remove.append({'shape':sh.num,'shape_ind':z})
+							yline['cc'] = 0
 
-						if case_on_line == 6:
-							
-							self.delete_rects_on_break_line()
-							self.delete_empty_shapes(self.shape_remove)
-							self.move_down_left_shapes(self.tidy_shapes,abc)						
+							for sh in reversed(self.tidy_shapes):
+								for z,rect in reversed(list(enumerate(sh.shape_list))):			
+									if abc == rect.y:
+										yline['cc'] +=1
+										self.shape_to_remove.append({'y':abc,'shape':sh.num,'shape_ind':z})
 
-							# Reset case_on_line					
-							case_on_line = 0
+							if yline['cc'] == 6:
+								
+								self.delete_rects_on_break_line(abc)
+								self.delete_empty_shapes(self.shape_remove)
+								self.move_down_left_shapes(self.tidy_shapes,abc)						
+
+								# Reset case_on_line					
+								yline['cc'] = 0
 
 				self.reset_values_end_loop()
 				pygame.display.flip()
