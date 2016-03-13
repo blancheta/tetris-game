@@ -74,6 +74,14 @@ class Game:
 
 		self.created_id = 0
 
+		self.score = 0
+
+		# Menu right
+		self.font = pygame.font.SysFont(None,25)
+		self.label_score = self.font.render("SCORE",1,(255,255,255))
+		self.value_score = self.font.render("000",1,(255,255,255))
+		self.label_next = self.font.render("NEXT",1,(255,255,255))
+
 	def create_new_shape(self):
 
 		shape_color_chosen = randint(1,len(self.shape_colors) - 1)
@@ -147,6 +155,23 @@ class Game:
 		for sh in self.tidy_shapes:
 			for rect in sh.shape_list:
 				pygame.draw.rect(self.screen,sh.color,rect)
+
+	def draw_score_box(self):
+
+		score_rect = Rect(self.bg_rect.width + 20,20,160,80)
+		pygame.draw.rect(self.screen,(255,255,255),score_rect,1)
+		self.screen.blit(self.label_score,(self.bg_rect.width + 20 +score_rect.width/2 - self.label_score.get_rect().width/2,40))
+
+		score_3_digits = "{:03}".format(self.score)
+
+		self.value_score = self.font.render(score_3_digits,1,(255,255,255))
+
+		self.screen.blit(self.value_score,(self.bg_rect.width + 20 +score_rect.width/2 - self.value_score.get_rect().width/2,60))
+
+	def draw_queue_box(self):
+		queue_rect = Rect(self.bg_rect.width + 20,180,160,250)
+		pygame.draw.rect(self.screen,(255,255,255),queue_rect,1)
+		self.screen.blit(self.label_next,(self.bg_rect.width + 20 +queue_rect.width/2 - self.label_next.get_rect().width/2,200))
 
 	def delete_empty_shapes(self,shape_remove_list):
 		for e in reversed(shape_remove_list):
@@ -245,6 +270,8 @@ class Game:
 							self.move_shape_on_the_right(rect)
 
 				self.draw_current_shape()
+				self.draw_score_box()
+				self.draw_queue_box()
 
 				if len(self.tidy_shapes) > 0:
 
@@ -266,7 +293,9 @@ class Game:
 										self.shape_to_remove.append({'y':abc,'shape':sh.num,'shape_ind':z})
 
 							if yline['cc'] == 6:
-								
+							
+								self.score += 10
+
 								self.delete_rects_on_break_line(abc)
 								self.delete_empty_shapes(self.shape_remove)
 								self.move_down_left_shapes(self.tidy_shapes,abc)						
