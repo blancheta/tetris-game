@@ -30,6 +30,7 @@ class Game:
 
 		# Background Game
 		self.bg = pygame.image.load("images/starsbackground.jpg")
+		self.bg = pygame.transform.scale(self.bg,(300,500))
 		self.bg_rect = self.bg.get_rect()
 
 		# Life Bar
@@ -131,12 +132,12 @@ class Game:
 	def draw_current_shape(self):
 
 		for i,rect_sh in enumerate(self.shape.shape_list):
-			if ((rect_sh.y + rect_sh.height) <= self.scr_height):
+			if ((rect_sh.y + rect_sh.height) <= self.bg_rect.height):
 				rect_sh.y += 5
 			
 			pygame.draw.rect(self.screen,self.shape.color,rect_sh)
 
-			if( rect_sh.y + rect_sh.height ) == self.scr_height:
+			if( rect_sh.y + rect_sh.height ) == self.bg_rect.height:
 				self.start_new_object = True
 		if self.start_new_object:
 			if self.shape not in self.tidy_shapes:
@@ -175,7 +176,7 @@ class Game:
 
 		# Forbid to go over the right border
 
-		elif rect.x + rect.width == self.scr_width:
+		elif rect.x + rect.width == self.bg_rect.width:
 			self.border_right = True
 			self.border_left = False
 
@@ -233,7 +234,7 @@ class Game:
 
 					self.forbid_to_go_over_screen_border(rect)
 
-					if rect.x >= 0 and rect.x < self.scr_width:
+					if rect.x >= 0 and rect.x < self.bg_rect.width:
 
 						if self.left_pressed and not self.border_left:
 		
