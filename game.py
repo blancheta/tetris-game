@@ -68,6 +68,7 @@ class Game:
 		self.top_pressed_count = 0
 		self.start_new_object = True
 		self.game_stop = False
+		self.game_over = False
 		self.collision = False
 		self.shape = None
 
@@ -79,9 +80,11 @@ class Game:
 
 		# Menu right
 		self.font = pygame.font.SysFont(None,25)
+		self.big_font = pygame.font.SysFont(None,60)
 		self.label_score = self.font.render("SCORE",1,(255,255,255))
 		self.value_score = self.font.render("000",1,(255,255,255))
 		self.label_next = self.font.render("NEXT",1,(255,255,255))
+		self.label_game_over = self.big_font.render("Game Over",1,(255,255,255))
 
 	def create_new_shape(self):
 
@@ -134,6 +137,7 @@ class Game:
 
 						if tidy_rect.y == 50 and rect.y + rect.height == 50:
 							self.game_stop = True
+							self.game_over = True
 							break
 
 					if ((rect.y >= tidy_rect.y) and (rect.y <= tidy_rect.y+ tidy_rect.y + tidy_rect.height)) or ((rect.y + rect.height >= tidy_rect.y) and (rect.y + rect.height <= tidy_rect.y + tidy_rect.height)):
@@ -313,3 +317,9 @@ class Game:
 
 				self.reset_values_end_loop()
 				pygame.display.flip()
+				
+			if self.game_over:
+				self.screen.blit(self.label_game_over,(self.bg_rect.width/2 - self.label_game_over.get_rect().width/2,self.bg_rect.height/2 - self.label_game_over.get_rect().height/2))
+				pygame.display.flip()
+				mainloop = False
+				pygame.time.delay(2000)
