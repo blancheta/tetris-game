@@ -67,10 +67,11 @@ class Game:
 
 		self.top_pressed_count = 0
 		self.start_new_object = True
+		self.game_stop = False
 		self.collision = False
 		self.shape = None
 
-		self.ylines = [{'y':450,'cc':0},{'y':400,'cc':0},{'y':350,'cc':0},{'y':300,'cc':0},{'y':250,'cc':0},{'y':200,'cc':0},{'y':150,'cc':0},{'y':100,'cc':0},{'y':50,'cc':0}]
+		self.ylines = [{'y':450,'cc':0},{'y':400,'cc':0},{'y':350,'cc':0},{'y':300,'cc':0},{'y':250,'cc':0},{'y':200,'cc':0},{'y':150,'cc':0},{'y':100,'cc':0},{'y':50,'cc':0},{'y':0,'cc':0}]
 
 		self.created_id = 0
 
@@ -124,14 +125,18 @@ class Game:
 			for tidy_rect in tidy_shape.shape_list:
 
 				for rect in self.shape.shape_list:
-					if (rect.y == tidy_rect.y - (rect.height + 5)) and ( rect.x == tidy_rect.x ):
-						
+					if (rect.y == tidy_rect.y - (rect.height)) and ( rect.x == tidy_rect.x ):
+
 						if self.shape not in self.tidy_shapes:
 							self.tidy_shapes.append(self.shape)
 							self.start_new_object = True
 							self.collision = True
 
-					if ((rect.y >= tidy_rect.y - 5) and (rect.y <= tidy_rect.y-5 + tidy_rect.y + tidy_rect.height)) or ((rect.y + rect.height >= tidy_rect.y) and (rect.y + rect.height <= tidy_rect.y + tidy_rect.height)):
+						if tidy_rect.y == 50 and rect.y + rect.height == 50:
+							self.game_stop = True
+							break
+
+					if ((rect.y >= tidy_rect.y) and (rect.y <= tidy_rect.y+ tidy_rect.y + tidy_rect.height)) or ((rect.y + rect.height >= tidy_rect.y) and (rect.y + rect.height <= tidy_rect.y + tidy_rect.height)):
 						if rect.x == tidy_rect.x + tidy_rect.width:
 							self.left_pressed = False
 						elif rect.x + rect.width == tidy_rect.x:
@@ -147,6 +152,7 @@ class Game:
 
 			if( rect_sh.y + rect_sh.height ) == self.bg_rect.height:
 				self.start_new_object = True
+
 		if self.start_new_object:
 			if self.shape not in self.tidy_shapes:
 				self.tidy_shapes.append(self.shape)
@@ -238,7 +244,7 @@ class Game:
 
 			self.detect_keyboard_event(pygame.event.get())
 
-			if self.start_new_object:
+			if self.start_new_object and not self.game_stop:
 
 				self.create_new_shape()
 				
@@ -251,9 +257,11 @@ class Game:
 
 					self.top_pressed = False
 
-				if len(self.tidy_shapes) > 0:
+				if not self.game_stop:
+					self.draw_current_shape()
 
-					self.detect_collision_with_other_shapes()
+				self.draw_score_box()
+				self.draw_queue_box()
 
 				for rect in self.shape.shape_list:
 
@@ -269,9 +277,9 @@ class Game:
 
 							self.move_shape_on_the_right(rect)
 
-				self.draw_current_shape()
-				self.draw_score_box()
-				self.draw_queue_box()
+				if len(self.tidy_shapes) > 0:
+
+					self.detect_collision_with_other_shapes()
 
 				if len(self.tidy_shapes) > 0:
 
@@ -293,7 +301,7 @@ class Game:
 										self.shape_to_remove.append({'y':abc,'shape':sh.num,'shape_ind':z})
 
 							if yline['cc'] == 6:
-							
+
 								self.score += 10
 
 								self.delete_rects_on_break_line(abc)
