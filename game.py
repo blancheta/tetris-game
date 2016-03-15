@@ -72,6 +72,9 @@ class Game:
 		self.collision = False
 		self.shape = None
 
+		self.init_queue_shape = True
+		self.first_shape_creation = True
+
 		self.ylines = [{'y':450,'cc':0},{'y':400,'cc':0},{'y':350,'cc':0},{'y':300,'cc':0},{'y':250,'cc':0},{'y':200,'cc':0},{'y':150,'cc':0},{'y':100,'cc':0},{'y':50,'cc':0},{'y':0,'cc':0}]
 
 		self.created_id = 0
@@ -86,27 +89,46 @@ class Game:
 		self.label_next = self.font.render("NEXT",1,(255,255,255))
 		self.label_game_over = self.big_font.render("Game Over",1,(255,255,255))
 
-	def create_new_shape(self):
+	def generate_new_shape(self):
 
 		shape_color_chosen = randint(1,len(self.shape_colors) - 1)
 		# shape_chosen = randint(0,3)
 		shape_chosen = 3
 
-		self.super_indice = len(self.tidy_shapes)
-
 		creation_shape_params = [self.super_indice,"Bar"+str(self.created_id),self.shape_colors[shape_color_chosen]]
 		if shape_chosen == 0:
-			self.shape = Shape_u(*creation_shape_params)
+			shape = Shape_u(*creation_shape_params)
 		elif shape_chosen == 1:
-			self.shape = Shape_s(*creation_shape_params)
+			shape = Shape_s(*creation_shape_params)
 		elif shape_chosen == 2:
-			self.shape = Shape_square(*creation_shape_params)
+			shape = Shape_square(*creation_shape_params)
 		elif shape_chosen == 3:
-			self.shape = Shape_bar(*creation_shape_params)
+			shape = Shape_bar(*creation_shape_params)
 
 		self.created_id += 1
 		self.start_new_object = False
 		self.top_pressed_count = 0
+
+		return shape
+
+	def create_new_shape(self):
+
+		self.super_indice = len(self.tidy_shapes)
+
+		if self.first_shape_creation:
+
+			self.shape = self.generate_new_shape()
+			self.next_shape = self.generate_new_shape()
+			self.first_shape_creation = False
+
+		else:
+
+			self.next_shape.num = self.super_indice
+			self.next_shape.init_shape_list()
+
+			self.shape = self.next_shape
+			self.init_queue_shape = True
+			self.next_shape = self.generate_new_shape()
 
 	def detect_keyboard_event(self,events):
 
@@ -181,6 +203,22 @@ class Game:
 	def draw_queue_box(self):
 		queue_rect = Rect(self.bg_rect.width + 20,180,160,250)
 		pygame.draw.rect(self.screen,(255,255,255),queue_rect,1)
+
+		sha = self.next_shape
+
+		if self.init_queue_shape:
+
+			for rect in self.next_shape.shape_list:
+				rect.x = rect.x + queue_rect.x + 5
+				rect.y = rect.y + queue_rect.y + 140
+				rect.width = 50
+				rect.height = 50
+			self.init_queue_shape = False
+
+
+		for rect in self.next_shape.shape_list:
+			pygame.draw.rect(self.screen,sha.color,rect)
+
 		self.screen.blit(self.label_next,(self.bg_rect.width + 20 +queue_rect.width/2 - self.label_next.get_rect().width/2,200))
 
 	def delete_empty_shapes(self,shape_remove_list):

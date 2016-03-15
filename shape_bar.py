@@ -7,7 +7,11 @@ class Shape_bar(Shape):
 
 	def __init__(self,num,name,color):
 		super(Shape_bar,self).__init__(num,name,color)
+		self.init_shape_list()
+	
+	def init_shape_list(self):
 		self.shape_list = [Rect(0,-50,50,50),Rect(50,-50,50,50),Rect(100,-50,50,50)]
+
 	def rota180(self):
 
 		new_form = self.shape_list
